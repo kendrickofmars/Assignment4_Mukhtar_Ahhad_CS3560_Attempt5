@@ -8,9 +8,9 @@ public class ConnectionFactory {
 
     private static final String URL = "jdbc:postgresql://localhost:5432/library_db";
     //change USER and PWD values to your respective usernames and passwords
-    private static final String USER = "nreef";
+    private static final String USER = "postgres";
 
-    private static final String PWD = "1234";
+    private static final String PWD = "1234b";
 
     public static Connection getConnection() throws ClassNotFoundException, SQLException {
 

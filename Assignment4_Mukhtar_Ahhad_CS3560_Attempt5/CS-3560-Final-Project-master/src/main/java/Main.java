@@ -29,8 +29,8 @@ public class Main {
             // Example Adding a Student to Table
 
             transaction.begin();
-            Student student = new Student("022", "Jon Doe", "Comp Sci");
-            entityManager.persist(student);
+//            Student student = new Student("022", "Jon Doe", "Comp Sci");
+//            entityManager.persist(student);
             transaction.commit();
 
 
