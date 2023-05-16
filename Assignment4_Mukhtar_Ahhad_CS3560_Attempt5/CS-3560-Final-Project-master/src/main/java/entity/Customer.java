@@ -42,7 +42,9 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JoinColumn(name = "address_id")
     private Address addressInst;
+    public Customer(){
 
+    }
 
 
     //foreign key, one-to-one relation w/ customer and address
@@ -53,8 +55,8 @@ public class Customer {
         this.email = email;
     }
 
-    public Customer(int id, String name, String phone, String email, Address addressInst) {
-        this.id = id;
+    public Customer(String name, String phone, String email, Address addressInst) {
+
         this.name = name;
         this.phone = phone;
         this.email = email;

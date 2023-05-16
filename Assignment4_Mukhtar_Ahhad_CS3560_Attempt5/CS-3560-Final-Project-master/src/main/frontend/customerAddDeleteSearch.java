@@ -98,28 +98,55 @@ public class customerAddDeleteSearch extends JFrame
             String city = CityField.getText();
             String state = StateField.getText();
 
-            int zipcode;
-            try{
-                zipcode = Integer.parseInt(ZipCodeField.getText());
-            }catch(NumberFormatException n){
-                throw new RuntimeException(n);
-            }
+            int zipcode = Integer.parseInt(ZipCodeField.getText());
+//            try{
+//                zipcode = Integer.parseInt(ZipCodeField.getText());
+//            }catch(NumberFormatException n){
+//                throw new RuntimeException(n);
+//            }
 
-            Customer customerInstance = new Customer(customerName, phoneNumber,email);
             Address addressInstance = new Address(streetVal, city, state, zipcode);
+            Customer customerInstance = new Customer(customerName, phoneNumber,email,addressInstance);
+
 
             if(e.getSource() == addButton){
+                JOptionPane.showMessageDialog(null, streetVal + "\n" + city + "\n" +  state + "\n" + zipcode);
                 transaction.begin();
-                entityManager.persist(customerInstance);
                 entityManager.persist(addressInstance);
+                entityManager.persist(customerInstance);
+
+
                 transaction.commit();
 
             }else if(e.getSource() == updateButton){
 
             }else if(e.getSource() == searchButton){
-
+                String nametoSearch = JOptionPane.showInputDialog(null,"Enter name of customer to search for: ");
+                Query search = entityManager.createNativeQuery("SELECT name, phone, email, id, address_id\n" +
+                        "\tFROM public.\"Customer\" WHERE name =?");
+                search.setParameter(1,nametoSearch);
+//                while(search.)
+//                if(nametoSearch.equals(search.getParameter("name"))){
+//                    NameField.setText(nametoSearch);
+////                    PhoneNumberField.setText();
+//                }
             }else if(e.getSource() == deleteButton){
 
+                Customer customerToRemove = entityManager.find(Customer.class,1);
+                transaction.begin();
+                entityManager.remove(customerToRemove);
+                transaction.commit();
+
+                JOptionPane.showMessageDialog(null,"Customer successfully deleted from db");
+
+
+                NameField.setText("");
+                PhoneNumberField.setText("");
+                EmailField.setText("");
+                Street.setText("");
+                CityField.setText("");
+                StateField.setText("");
+                ZipCodeField.setText("");
             }
         }
     }

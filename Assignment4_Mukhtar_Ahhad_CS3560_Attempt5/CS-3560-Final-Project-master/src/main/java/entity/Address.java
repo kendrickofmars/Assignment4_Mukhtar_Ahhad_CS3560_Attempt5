@@ -48,12 +48,15 @@ public class Address {
     @Column(name="zip_code")
     private int zipCode;
 
+
+
     public Address(String street, String city, String state, int zipCode) {
         this.street = street;
         this.city = city;
         this.state = state;
         this.zipCode = zipCode;
     }
+    public Address(){}
     public int getId() {
         return id;
     }
