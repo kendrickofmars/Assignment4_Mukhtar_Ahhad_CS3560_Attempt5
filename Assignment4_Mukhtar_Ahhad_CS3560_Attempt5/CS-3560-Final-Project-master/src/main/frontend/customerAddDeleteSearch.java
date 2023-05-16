@@ -22,6 +22,7 @@ import java.util.List;
 
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import src.main.jdbc.ConnectionFactory;
 
 
 /**
@@ -98,44 +99,142 @@ public class customerAddDeleteSearch extends JFrame
             String city = CityField.getText();
             String state = StateField.getText();
 
-            int zipcode = Integer.parseInt(ZipCodeField.getText());
-//            try{
-//                zipcode = Integer.parseInt(ZipCodeField.getText());
-//            }catch(NumberFormatException n){
-//                throw new RuntimeException(n);
-//            }
+            int zipcode;
+            try{
+                zipcode = Integer.parseInt(ZipCodeField.getText());
+            }catch(NumberFormatException n){
+                throw new RuntimeException(n);
+            }
 
             Address addressInstance = new Address(streetVal, city, state, zipcode);
             Customer customerInstance = new Customer(customerName, phoneNumber,email,addressInstance);
 
 
             if(e.getSource() == addButton){
-                JOptionPane.showMessageDialog(null, streetVal + "\n" + city + "\n" +  state + "\n" + zipcode);
+
                 transaction.begin();
                 entityManager.persist(addressInstance);
                 entityManager.persist(customerInstance);
 
 
                 transaction.commit();
+                JOptionPane.showMessageDialog(null, "Customer " + customerName + "successfully included");
 
             }else if(e.getSource() == updateButton){
+                try{
+                    Connection connection = ConnectionFactory.getConnection();
+                    PreparedStatement stmt1 = connection.prepareStatement("UPDATE public.\"Customer\"\n" +
+                            "\tSET name=?, phone=?, email=?" +
+                            "\tWHERE name =?");
+                    stmt1.setString(1, customerName);
+                    stmt1.setString(2, phoneNumber);
+                    stmt1.setString(3,email);
+                    stmt1.setString(4,customerName);
+
+                    PreparedStatement stmt2 = connection.prepareStatement("UPDATE public.address\n" +
+                            "\tSET city=?, street=?, state=?, zip_code=?" +
+                            "\tWHERE city=? AND street =?");
+                    stmt2.setString(1, city);
+                    stmt2.setString(2,streetVal);
+                    stmt2.setString(3,state);
+                    stmt2.setInt(4,zipcode);
+                    stmt2.setString(5,city);
+                    stmt2.setString(6,streetVal);
+
+                    stmt1.executeUpdate();
+
+                    stmt2.executeUpdate();
+                    JOptionPane.showMessageDialog(null, "Customer Data succesfully updated\nResetting Fields");
+                    NameField.setText("");
+                    PhoneNumberField.setText("");
+                    EmailField.setText("");
+
+                    Street.setText("");
+                    CityField.setText("");
+                    StateField.setText("");
+                    ZipCodeField.setText("");
+
+                }catch(ClassNotFoundException ex2){
+                    throw new RuntimeException(ex2);
+                }catch(SQLException ex2){
+                    throw new RuntimeException(ex2);
+                }
 
             }else if(e.getSource() == searchButton){
-                String nametoSearch = JOptionPane.showInputDialog(null,"Enter name of customer to search for: ");
-                Query search = entityManager.createNativeQuery("SELECT name, phone, email, id, address_id\n" +
-                        "\tFROM public.\"Customer\" WHERE name =?");
-                search.setParameter(1,nametoSearch);
-//                while(search.)
-//                if(nametoSearch.equals(search.getParameter("name"))){
-//                    NameField.setText(nametoSearch);
-////                    PhoneNumberField.setText();
-//                }
-            }else if(e.getSource() == deleteButton){
+                try {
+                    Connection connection = ConnectionFactory.getConnection();
+                    PreparedStatement stmt = connection.prepareStatement("SELECT name, phone, email, id, address_id\n" +
+                            "\tFROM public.\"Customer\" WHERE name =?");
+                    stmt.setString(1, customerName);
+                    ResultSet rs = stmt.executeQuery();
 
-                Customer customerToRemove = entityManager.find(Customer.class,1);
-                transaction.begin();
-                entityManager.remove(customerToRemove);
-                transaction.commit();
+
+                    while(rs.next()) {
+                        if (customerName.equals(rs.getString("name"))) {
+                            JOptionPane.showMessageDialog(null,"Found " + rs.getString("name") +
+                                                            " within db, \nSetting fields to values found");
+                            NameField.setText(rs.getString("name"));
+                            PhoneNumberField.setText(rs.getString("phone"));
+                            EmailField.setText(rs.getString("email"));
+
+                            PreparedStatement stmt2 = connection.prepareStatement("SELECT city, street, state, zip_code, id\n" +
+                                    "\tFROM public.address WHERE id =?");
+                            stmt2.setInt(1, rs.getInt("address_id"));
+                            ResultSet rs2 = stmt2.executeQuery();
+
+                            if(rs2.next()) {
+                                Street.setText(rs2.getString("street"));
+                                CityField.setText(rs2.getString("city"));
+                                StateField.setText(rs2.getString("state"));
+                                ZipCodeField.setText(String.valueOf(rs2.getInt("zip_code")));
+                            }
+                        }else{
+                            JOptionPane.showMessageDialog(null, "No Records Found");
+                        }
+                    }
+                }catch(ClassNotFoundException ex){
+                    throw new RuntimeException(ex);
+                }catch (SQLException ex){
+                    throw new RuntimeException(ex);
+                }
+            }else if(e.getSource() == deleteButton){
+                try {
+                    Connection connection = ConnectionFactory.getConnection();
+
+                    PreparedStatement stmt = connection.prepareStatement("DELETE FROM public.\"Customer\"\n" +
+                            "\tWHERE name =?");
+                    stmt.setString(1, customerName);
+                    ResultSet rs = stmt.executeQuery();
+
+
+                    while(rs.next()) {
+                        if (customerName.equals(rs.getString("name"))) {
+                            JOptionPane.showMessageDialog(null,"Found " + rs.getString("name") +
+                                    " within db, \nDeleting from db and resetting fields");
+                            NameField.setText("");
+                            PhoneNumberField.setText("");
+                            EmailField.setText("");
+
+                            PreparedStatement stmt2 = connection.prepareStatement("DELETE FROM " +
+                                    "public.address WHERE id =?");
+                            stmt2.setInt(1, rs.getInt("address_id"));
+                            ResultSet rs2 = stmt2.executeQuery();
+
+                            if(rs2.next()) {
+                                Street.setText("");
+                                CityField.setText("");
+                                StateField.setText("");
+                                ZipCodeField.setText("");
+                            }
+                        }else{
+                            JOptionPane.showMessageDialog(null, "No Records Found");
+                        }
+                    }
+                }catch(ClassNotFoundException ex){
+                    throw new RuntimeException(ex);
+                }catch (SQLException ex){
+                    throw new RuntimeException(ex);
+                }
 
                 JOptionPane.showMessageDialog(null,"Customer successfully deleted from db");
 

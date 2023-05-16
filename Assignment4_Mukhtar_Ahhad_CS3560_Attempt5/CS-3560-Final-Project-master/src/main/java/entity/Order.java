@@ -41,23 +41,34 @@ public class Order {
     //we use these decorators because customer_id is a foreign key
     //and a single customer can have multiple orders
 //    @ManyToOne(cascade = CascadeType.PERSIST)
+
+    @ManyToOne(targetEntity = Customer.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JoinColumn(name="customer_id")
-    private int customer_id;
+    private Customer customerInstance;
     public Order(){
 
     }
 
 
 
-    public Order(int number, java.sql.Date date, String item, double price) {
+
+    public Order(int number, java.sql.Date date, String item, double price, Customer customerInstance) {
         this.number = number;
         this.date = date;
         this.item = item;
         this.price = price;
+        this.customerInstance  = customerInstance;
 
     }
 
+    public Customer getCustomerInstance() {
+        return customerInstance;
+    }
 
+    public void setCustomerInstance(Customer customerInstance) {
+        this.customerInstance = customerInstance;
+    }
 
     public int getNumber() {
         return number;
@@ -91,24 +102,17 @@ public class Order {
         this.price = price;
     }
 
-    public int getCustomer_id() {
-        return customer_id;
-    }
-
-    public void setCustomer_id(int customer_id) {
-        this.customer_id = customer_id;
-    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Order)) return false;
         Order order = (Order) o;
-        return getNumber() == order.getNumber() && Double.compare(order.getPrice(), getPrice()) == 0 && Objects.equals(getDate(), order.getDate()) && Objects.equals(getItem(), order.getItem());
+        return getNumber() == order.getNumber() && Double.compare(order.getPrice(), getPrice()) == 0 && Objects.equals(getDate(), order.getDate()) && Objects.equals(getItem(), order.getItem()) && Objects.equals(getCustomerInstance(), order.getCustomerInstance());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getNumber(), getDate(), getItem(), getPrice());
+        return Objects.hash(getNumber(), getDate(), getItem(), getPrice(), getCustomerInstance());
     }
 }

@@ -38,7 +38,10 @@
                     <preferred-size width="150" height="-1"/>
                   </grid>
                 </constraints>
-                <properties/>
+                <properties>
+                  <text value="0000-00-00"/>
+                  <toolTipText value="YYYY-MM-dd"/>
+                </properties>
               </component>
               <hspacer id="bc266">
                 <constraints>
